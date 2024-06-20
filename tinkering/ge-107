@@ -1,0 +1,164 @@
+#include <Servo.h>
+
+#define TRIGGER_PIN  3
+#define ECHO_PIN     6
+// Motor A connections
+int ena1 = A1;
+int in1 = 4;
+int in2 = 5;
+
+int enb1 = A2;
+int in3 = 7;
+int in4 = 8;
+
+int ena2 = A3;
+int in5 = 10;
+int in6 = 11;
+
+int enb2 = A0;
+int in7 = 12;
+int in8 = 13;
+
+Servo armServo; // Servo motor for the arm
+
+void setup() {
+  pinMode(TRIGGER_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  pinMode(ena1, OUTPUT);
+  pinMode(enb1, OUTPUT);
+  pinMode(ena2, OUTPUT);
+  pinMode(enb2, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+  pinMode(in5, OUTPUT);
+  pinMode(in6, OUTPUT);
+  pinMode(in7, OUTPUT);
+  pinMode(in8, OUTPUT);
+
+  
+  armServo.attach(2); // Attach the servo to pin 2  
+  Serial.begin(9600);
+}
+
+void loop() {
+  armServo.write(0);
+  long duration, distance;
+  
+  // Send pulse to trigger pin
+  digitalWrite(TRIGGER_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIGGER_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIGGER_PIN, LOW);
+  
+  // Read the pulse on echo pin
+  duration = pulseIn(ECHO_PIN, HIGH);
+  
+  // Calculate distance in cm
+  distance = duration * 0.034 / 2;
+  
+  // Print distance to serial monitor
+  Serial.print("Distance: ");
+  Serial.println(distance);
+  
+  
+  // If distance is less than a threshold, move towards the object
+  if (distance < 20 && distance>5) { // Adjust the threshold as needed
+    moveTowardsBall();
+    // delay(1000); // Adjust delay according to your robot's speed and response time
+  }
+    if (distance<5){
+  	stopMoving();
+    collectBall();
+  	}
+  else {
+    // If the object is not within range, stop
+    findBall();
+    delay(2000);
+  }
+}
+
+void stopMoving(){
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, LOW);
+  
+}
+
+void moveTowardsBall() {
+  // Implement the movement logic here
+  // For example, you can control the motors to move the robot towards the ball
+  // Example:
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  analogWrite(ena1,255);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  analogWrite(enb1,255);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  analogWrite(ena2,255);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(enb2,255);
+}
+
+void findBall() {
+  // Stop the motors
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+
+
+
+  // digitalWrite(in5, LOW);
+  // digitalWrite(in6, LOW);
+  // digitalWrite(in7, LOW);
+  // digitalWrite(in8, LOW);
+
+
+
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+
+  analogWrite(ena1,50); //vhange 50 acc to speed of robot rotation
+  analogWrite(enb1,50);
+  
+  Serial.println("Turning to find the ball...");
+  // delay(1000);
+
+
+  // digitalWrite(in1, LOW);
+  // digitalWrite(in2, LOW);
+  // digitalWrite(in3, LOW);
+  // digitalWrite(in4, LOW);
+  // digitalWrite(in5, LOW);
+  // digitalWrite(in6, LOW);
+  // digitalWrite(in7, LOW);
+  // digitalWrite(in8, LOW);
+
+}
+
+void collectBall() {
+  // Move the arm to collect the ball
+  armServo.write(0); // Adjust the angle according to your setup
+  delay(1000); // Wait for the arm to reach the ball
+  armServo.write(90);
+  delay(1000);
+  armServo.write(180); // Adjust the angle according to your setup
+  delay(1000);// Adjust the angle to release the ball
+  armServo.write(90); // Adjust the angle according to your setup
+  delay(1000);// Adjust the angle to release the ball
+  armServo.write(0); // Adjust the angle according to your setup
+  delay(1000);// Adjust the angle to release the ball
+}
